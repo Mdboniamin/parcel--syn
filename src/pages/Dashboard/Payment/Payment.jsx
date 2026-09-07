@@ -36,7 +36,8 @@ const Payment = () => {
   return (
     <div>
       <h2 className="text-xl md:text-2xl mb-4">
-        Please Pay <span className="font-bold">${parcel.cost}</span> for: {parcel.parcelName}
+        Please Pay <span className="font-bold">${parcel.cost}</span> for:{" "}
+        {parcel.parcelName}
       </h2>
       <button onClick={handlePayment} className="btn btn-primary text-black">
         Pay
