@@ -178,6 +178,18 @@ const DashboardLayout = () => {
                 <li>
                   <NavLink
                     className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                    data-tip="Assigned Parcels"
+                    to={"/dashboard/assigned-parcels"}
+                  >
+                    <FaTasks />
+                    <span className="is-drawer-close:hidden">
+                      Assigned Parcels
+                    </span>
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
                     data-tip="Users Management"
                     to={"/dashboard/users-management"}
                   >

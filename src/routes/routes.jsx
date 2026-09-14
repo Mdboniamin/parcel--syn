@@ -25,6 +25,7 @@ import ParcelTrack from "../pages/ParcelTrack/ParcelTrack";
 import DashboardHome from "../pages/Dashboard/DashboardHome/DashboardHome";
 import About from "../pages/About/About";
 import Profile from "../pages/Dashboard/Profile/Profile";
+import AssignedParcels from "../pages/Dashboard/AssignedParcels/AssignedParcels";
 
 export const router = createBrowserRouter([
   {
@@ -161,6 +162,14 @@ export const router = createBrowserRouter([
           </AdminRoute>
         ),
         //Component: UsersManagement,
+      },
+      {
+        path: "assigned-parcels",
+        element: (
+          <AdminRoute>
+            <AssignedParcels></AssignedParcels>
+          </AdminRoute>
+        ),
       },
     ],
   },
