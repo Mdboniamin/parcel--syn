@@ -8,7 +8,7 @@ const Logo = () => {
     <Link to={"/"}>
       <div className="flex items-end">
         <img src={logo} alt="" />
-        <h3 className="text-3xl font-bold -m-2.5">ZapShift</h3>
+        <h3 className="text-3xl font-bold -m-2.5">ParcelSync</h3>
       </div>
     </Link>
   );

@@ -10,13 +10,15 @@ const useAxiosSecure = () => {
   const { user, logOut } = useAuth();
   useEffect(() => {
     //intercept request
-    const reqInterceptor = axiosSecure.interceptors.request.use(async (config) => {
-  if (user) {
-    const token = await user.getIdToken(); // always fresh, auto-refreshes if near expiry
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+    const reqInterceptor = axiosSecure.interceptors.request.use(
+      async (config) => {
+        if (user) {
+          const token = await user.getIdToken(); // always fresh, auto-refreshes if near expiry
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+    );
     //interceptor response
     const responseInterceptor = axiosSecure.interceptors.response.use(
       (response) => {
@@ -24,14 +26,14 @@ const useAxiosSecure = () => {
       },
       (error) => {
         console.log(error);
-        const statusCode = error.status;
-        if (statusCode === 401 || statusCode === 403) {
+        const statusCode = error.response?.status;
+        if (statusCode === 401) {
           logOut().then(() => {
             navigate("/login");
           });
         }
         return Promise.reject(error);
-      }
+      },
     );
 
     //interceptor request

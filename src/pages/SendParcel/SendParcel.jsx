@@ -18,26 +18,56 @@ const SendParcel = () => {
   const navigate = useNavigate();
   const {
     register,
-    // formState: { errors },
+    formState: { errors, touchedFields, dirtyFields },
     handleSubmit,
     control,
-  } = useForm();
+  } = useForm({ mode: "onChange" });
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
-  //explre useMemo useCallback
+
   const senderRegion = useWatch({ control, name: "senderRegion" });
+  const receiverRegion = useWatch({ control, name: "receiverRegion" });
+  const parcelType = useWatch({ control, name: "parcelType" });
+
+  // returns border/text color classes based on live validation state
+  const getInputClass = (name) => {
+    const hasError = errors[name];
+    const isTouched = touchedFields[name] || dirtyFields[name];
+    if (hasError) return "input w-full border-red-500 focus:outline-red-500";
+    if (isTouched)
+      return "input w-full border-green-500 focus:outline-green-500";
+    return "input w-full";
+  };
+
+  const getSelectClass = (name) => {
+    const hasError = errors[name];
+    const isTouched = touchedFields[name] || dirtyFields[name];
+    if (hasError) return "select w-full border-red-500 focus:outline-red-500";
+    if (isTouched)
+      return "select w-full border-green-500 focus:outline-green-500";
+    return "select w-full";
+  };
+
+  const FieldError = ({ name }) =>
+    errors[name] ? (
+      <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+        <span>⚠</span> {errors[name].message}
+      </p>
+    ) : touchedFields[name] || dirtyFields[name] ? (
+      <p className="text-green-600 text-sm mt-1 flex items-center gap-1">
+        <span>✓</span> Looks good
+      </p>
+    ) : null;
+
   const handleSendParcel = (data) => {
-    console.log(data);
     const isDocument = data.parcelType == "document";
     const isSameDistrict = data.senderDistrict === data.receiverDistrict;
     const parcelWeight = parseFloat(data.parcelWeight);
     let cost = 0;
 
     if (isDocument) {
-      //document
       cost = isSameDistrict ? 60 : 80;
     } else {
-      //non-document
       if (parcelWeight < 3) {
         cost = isSameDistrict ? 110 : 150;
       } else {
@@ -49,7 +79,6 @@ const SendParcel = () => {
         cost = minCharge + extraCharge;
       }
     }
-    console.log("cost", cost);
     data.cost = cost;
     Swal.fire({
       title: "Agree with the cost?",
@@ -61,9 +90,7 @@ const SendParcel = () => {
       confirmButtonText: "Confirm and Continue Payment",
     }).then((result) => {
       if (result.isConfirmed) {
-        //save the parcel info to the db
         axiosSecure.post("/parcels", data).then((res) => {
-          console.log("after saving parcel", res.data);
           if (res.data.insertedId) {
             navigate("/dashboard/my-parcels");
             Swal.fire({
@@ -79,7 +106,16 @@ const SendParcel = () => {
     });
   };
 
-  const receiverRegion = useWatch({ control, name: "receiverRegion" });
+  const phonePattern = {
+    value: /^01[3-9]\d{8}$/,
+    message: "Enter a valid 11-digit phone number (e.g. 017XXXXXXXX)",
+  };
+
+  const emailPattern = {
+    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    message: "Enter a valid email address",
+  };
+
   return (
     <div>
       <h2 className="text-3xl md:text-5xl font-bold">Send A Parcel</h2>
@@ -92,7 +128,9 @@ const SendParcel = () => {
           <label className="label mr-4">
             <input
               type="radio"
-              {...register("parcelType")}
+              {...register("parcelType", {
+                required: "Please select a parcel type",
+              })}
               value="document"
               className="radio"
             />
@@ -101,179 +139,290 @@ const SendParcel = () => {
           <label className="label">
             <input
               type="radio"
-              {...register("parcelType")}
+              {...register("parcelType", {
+                required: "Please select a parcel type",
+              })}
               value="non-document"
               className="radio"
             />
             Non-Document
           </label>
+          <FieldError name="parcelType" />
         </div>
-        {/* parcel info name weigth etc  */}
+
+        {/* parcel info name weight etc  */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 my-8">
           <fieldset className="fieldset">
-            <label className="label">Parcel Name</label>
+            <label className="label">
+              Parcel Name <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
-              {...register("parcelName")}
-              className="input w-full"
+              {...register("parcelName", {
+                required: "Parcel name is required",
+              })}
+              className={getInputClass("parcelName")}
               placeholder="Parcel Name"
             />
+            <FieldError name="parcelName" />
           </fieldset>
           <fieldset className="fieldset">
-            <label className="label">Parcel Weight (kg)</label>
+            <label className="label">
+              Parcel Weight (kg){" "}
+              {parcelType === "non-document" && (
+                <span className="text-red-500">*</span>
+              )}
+            </label>
             <input
               type="number"
-              {...register("parcelWeight")}
-              className="input w-full"
+              step="0.01"
+              {...register("parcelWeight", {
+                validate: (value) => {
+                  if (parcelType !== "non-document") return true;
+                  if (!value) return "Parcel weight is required";
+                  if (parseFloat(value) <= 0)
+                    return "Weight must be greater than 0";
+                  return true;
+                },
+              })}
+              className={getInputClass("parcelWeight")}
               placeholder="Parcel Weight"
             />
+            <FieldError name="parcelWeight" />
           </fieldset>
         </div>
+
         {/* two column  */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* sender info  */}
-
           <fieldset className="fieldset">
             <h4 className="text-2xl font-semibold">Sender Details</h4>
-            {/* sender name  */}
-            <label className="label">Sender Name</label>
+
+            <label className="label">
+              Sender Name <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
-              {...register("senderName")}
+              {...register("senderName", {
+                required: "Sender name is required",
+                minLength: {
+                  value: 3,
+                  message: "Name must be at least 3 characters",
+                },
+              })}
               defaultValue={user.displayName}
-              className="input w-full"
+              className={getInputClass("senderName")}
               placeholder="Sender Name"
             />
-            <label className="label">Sender Email</label>
+            <FieldError name="senderName" />
+
+            <label className="label">
+              Sender Email <span className="text-red-500">*</span>
+            </label>
             <input
               type="email"
-              {...register("senderEmail")}
+              {...register("senderEmail", {
+                required: "Sender email is required",
+                pattern: emailPattern,
+              })}
               defaultValue={user.email}
-              className="input w-full"
+              className={getInputClass("senderEmail")}
               placeholder="Sender Email"
             />
-            {/* sender address  */}
-            <label className="label">Sender Address</label>
+            <FieldError name="senderEmail" />
+
+            <label className="label">
+              Sender Address <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
-              {...register("senderAddress")}
-              className="input w-full"
+              {...register("senderAddress", {
+                required: "Sender address is required",
+                minLength: {
+                  value: 5,
+                  message: "Address must be at least 5 characters",
+                },
+              })}
+              className={getInputClass("senderAddress")}
               placeholder="Sender Address"
             />
-            {/* sernder region  */}
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Sender Regions</legend>
-              <select
-                {...register("senderRegion")}
-                defaultValue="Pick a region"
-                className="select w-full"
-              >
-                <option disabled={true}>Pick a region</option>
+            <FieldError name="senderAddress" />
 
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">
+                Sender Regions <span className="text-red-500">*</span>
+              </legend>
+              <select
+                {...register("senderRegion", {
+                  required: "Please select a region",
+                })}
+                defaultValue=""
+                className={getSelectClass("senderRegion")}
+              >
+                <option value="" disabled>
+                  Pick a region
+                </option>
                 {regions.map((r, index) => (
                   <option key={index} value={r}>
                     {r}
                   </option>
                 ))}
               </select>
+              <FieldError name="senderRegion" />
             </fieldset>
-            {/* sender districts  */}
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Sender Districts</legend>
-              <select
-                {...register("senderDistrict")}
-                defaultValue="Pick a District"
-                className="select w-full"
-              >
-                <option disabled={true}>Pick a District</option>
 
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">
+                Sender Districts <span className="text-red-500">*</span>
+              </legend>
+              <select
+                {...register("senderDistrict", {
+                  required: "Please select a district",
+                })}
+                defaultValue=""
+                className={getSelectClass("senderDistrict")}
+              >
+                <option value="" disabled>
+                  Pick a District
+                </option>
                 {districtsByRegion(senderRegion).map((r, index) => (
                   <option key={index} value={r}>
                     {r}
                   </option>
                 ))}
               </select>
+              <FieldError name="senderDistrict" />
             </fieldset>
-            {/* sender Phone  */}
-            <label className="label">Phone Number</label>
+
+            <label className="label">
+              Phone Number <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
-              {...register("senderPhoneNumber")}
-              className="input w-full"
+              {...register("senderPhoneNumber", {
+                required: "Sender phone number is required",
+                pattern: phonePattern,
+              })}
+              className={getInputClass("senderPhoneNumber")}
               placeholder="Phone Number"
             />
+            <FieldError name="senderPhoneNumber" />
           </fieldset>
-          {/* receiver info  */}
 
+          {/* receiver info  */}
           <fieldset className="fieldset">
             <h4 className="text-2xl font-semibold">Receiver Details</h4>
-            {/* Receiver name  */}
-            <label className="label">Receiver Name</label>
+
+            <label className="label">
+              Receiver Name <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
-              {...register("receiverName")}
-              className="input w-full"
+              {...register("receiverName", {
+                required: "Receiver name is required",
+                minLength: {
+                  value: 3,
+                  message: "Name must be at least 3 characters",
+                },
+              })}
+              className={getInputClass("receiverName")}
               placeholder="Receiver Name"
             />
-            <label className="label">Receiver Email</label>
+            <FieldError name="receiverName" />
+
+            <label className="label">
+              Receiver Email <span className="text-red-500">*</span>
+            </label>
             <input
               type="email"
-              {...register("receiverEmail")}
-              className="input w-full"
+              {...register("receiverEmail", {
+                required: "Receiver email is required",
+                pattern: emailPattern,
+              })}
+              className={getInputClass("receiverEmail")}
               placeholder="Receiver Email"
             />
-            {/* Receiver address  */}
-            <label className="label">Receiver Address</label>
+            <FieldError name="receiverEmail" />
+
+            <label className="label">
+              Receiver Address <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
-              {...register("receiverAddress")}
-              className="input w-full"
+              {...register("receiverAddress", {
+                required: "Receiver address is required",
+                minLength: {
+                  value: 5,
+                  message: "Address must be at least 5 characters",
+                },
+              })}
+              className={getInputClass("receiverAddress")}
               placeholder="Receiver Address"
             />
-            {/* Receiver region  */}
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Receiver Regions</legend>
-              <select
-                {...register("receiverRegion")}
-                defaultValue="Pick a region"
-                className="select w-full"
-              >
-                <option disabled={true}>Pick a region</option>
+            <FieldError name="receiverAddress" />
 
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">
+                Receiver Regions <span className="text-red-500">*</span>
+              </legend>
+              <select
+                {...register("receiverRegion", {
+                  required: "Please select a region",
+                })}
+                defaultValue=""
+                className={getSelectClass("receiverRegion")}
+              >
+                <option value="" disabled>
+                  Pick a region
+                </option>
                 {regions.map((r, index) => (
                   <option key={index} value={r}>
                     {r}
                   </option>
                 ))}
               </select>
+              <FieldError name="receiverRegion" />
             </fieldset>
-            {/* receiver district  */}
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Receiver District</legend>
-              <select
-                {...register("receiverDistrict")}
-                defaultValue="Pick a District"
-                className="select w-full"
-              >
-                <option disabled={true}>Pick a District</option>
 
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">
+                Receiver District <span className="text-red-500">*</span>
+              </legend>
+              <select
+                {...register("receiverDistrict", {
+                  required: "Please select a district",
+                })}
+                defaultValue=""
+                className={getSelectClass("receiverDistrict")}
+              >
+                <option value="" disabled>
+                  Pick a District
+                </option>
                 {districtsByRegion(receiverRegion).map((d, index) => (
                   <option key={index} value={d}>
                     {d}
                   </option>
                 ))}
               </select>
+              <FieldError name="receiverDistrict" />
             </fieldset>
-            {/* Receiver Phone  */}
-            <label className="label">Phone Number</label>
+
+            <label className="label">
+              Phone Number <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
-              {...register("receiverPhoneNumber")}
-              className="input w-full"
+              {...register("receiverPhoneNumber", {
+                required: "Receiver phone number is required",
+                pattern: phonePattern,
+              })}
+              className={getInputClass("receiverPhoneNumber")}
               placeholder="Phone Number"
             />
+            <FieldError name="receiverPhoneNumber" />
           </fieldset>
         </div>
+
         <input
           type="submit"
           value="Send Parcel"

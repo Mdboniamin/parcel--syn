@@ -6,9 +6,9 @@ import { Legend, Pie, PieChart, Tooltip } from "recharts";
 const AdminDashboardHome = () => {
   const axiosSecure = useAxiosSecure();
   const { data: deliveryStats = [] } = useQuery({
-    queryKey: ["deliveryStatus-stats"],
+    queryKey: ["delivery-status-stats"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/parcels/delivery-status/stats");
+      const res = await axiosSecure.get("/parcel/delivery-status/stats");
 
       return res.data;
     },

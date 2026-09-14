@@ -60,7 +60,7 @@ const Login = () => {
           <button className="btn btn-neutral mt-4">Login</button>
         </fieldset>
         <p>
-          New to Zapshift{" "}
+          New to ParcelSync{" "}
           <Link
             state={location?.state}
             className="text-blue-400 underline"

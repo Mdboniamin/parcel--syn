@@ -62,7 +62,7 @@ const Register = () => {
   };
   return (
     <div className="my-4 card p-4 bg-base-100 w-full mx-4 md:mx-auto max-w-sm shrink-0 shadow-2xl">
-      <h3 className="text-3xl text-center">Welcome to ZapShift</h3>
+      <h3 className="text-3xl text-center">Welcome to ParcelSync</h3>
       <p className="text-center">Please Register</p>
       <form className="card-body" onSubmit={handleSubmit(handleRegistration)}>
         <fieldset className="fieldset">

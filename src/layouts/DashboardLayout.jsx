@@ -7,6 +7,7 @@ import useRole from "../hooks/useRole";
 import { RiEBikeFill } from "react-icons/ri";
 import { MdOutlineTaskAlt } from "react-icons/md";
 import logoImg from "../assets/logo.png";
+import { FaUserCircle } from "react-icons/fa";
 
 const DashboardLayout = () => {
   const { role } = useRole();
@@ -37,7 +38,7 @@ const DashboardLayout = () => {
               <path d="M14 10l2 2l-2 2"></path>
             </svg>
           </label>
-          <div className="px-4">Zap Shift Dashboard</div>
+          <div className="px-4">ParcelSync Shift Dashboard</div>
         </nav>
         {/* Page content here */}
         <div className="p-4 md:p-6">
@@ -102,6 +103,16 @@ const DashboardLayout = () => {
               >
                 <FaCreditCard />
                 <span className="is-drawer-close:hidden">Payment History</span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                data-tip="Profile"
+                to={"/dashboard/profile"}
+              >
+                <FaUserCircle />
+                <span className="is-drawer-close:hidden">Profile</span>
               </NavLink>
             </li>
             {role === "rider" && (

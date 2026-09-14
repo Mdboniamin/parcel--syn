@@ -7,7 +7,7 @@ import Login from "../pages/Auth/Login/Login";
 import Register from "../pages/Auth/Register/Register";
 import PrivateRoute from "./PrivateRoute";
 import Rider from "../pages/Rider/Rider";
-import SendParcel from "../pages/sendParcel/sendParcel";
+import SendParcel from "../pages/SendParcel/SendParcel";
 import DashboardLayout from "../layouts/DashboardLayout";
 import MyParcels from "../pages/Dashboard/MyParcels/MyParcels";
 import Payment from "../pages/Dashboard/Payment/Payment";
@@ -23,6 +23,8 @@ import AssignedDeliveries from "../pages/Dashboard/AssignedDeliveries/AssignedDe
 import CompletedDeliveries from "../pages/Dashboard/CompletedDeliveries/CompletedDeliveries";
 import ParcelTrack from "../pages/ParcelTrack/ParcelTrack";
 import DashboardHome from "../pages/Dashboard/DashboardHome/DashboardHome";
+import About from "../pages/About/About";
+import Profile from "../pages/Dashboard/Profile/Profile";
 
 export const router = createBrowserRouter([
   {
@@ -59,6 +61,10 @@ export const router = createBrowserRouter([
       {
         path: "parcel-track/:trackingId",
         Component: ParcelTrack,
+      },
+      {
+        path: "about",
+        Component: About,
       },
     ],
   },
@@ -107,6 +113,10 @@ export const router = createBrowserRouter([
       {
         path: "payment-history",
         Component: PaymentHistory,
+      },
+      {
+        path: "profile",
+        Component: Profile,
       },
       //rider only routes
       {
