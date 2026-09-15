@@ -9,12 +9,13 @@ const Reviews = ({ reviewsPromise }) => {
   return (
     <div className="my-24">
       <div className="text-center mb-12 md:mb-24 px-4">
-        <h3 className="text-2xl md:text-3xl text-center font-bold my-4 md:my-8">Reviews</h3>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Blanditiis,
-          fuga deserunt vel animi quisquam libero optio reprehenderit, tenetur
-          culpa repellendus quis laboriosam voluptate odio voluptatum dolor.
-          Consequatur suscipit quisquam perferendis.
+        <h3 className="text-2xl md:text-3xl text-center font-bold my-4 md:my-8">
+          Reviews
+        </h3>
+        <p className="...">
+          See what our customers have to say about their delivery experience.
+          From fast, reliable service to careful handling of every parcel, real
+          feedback from real users.
         </p>
       </div>
       <>
