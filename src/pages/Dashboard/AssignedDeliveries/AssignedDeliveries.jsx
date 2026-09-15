@@ -8,10 +8,10 @@ const AssignedDeliveries = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
   const { data: parcels = [], refetch } = useQuery({
-    queryKey: ["parcels", user.email, "driver_assigned"],
+    queryKey: ["parcels", user.email, "assigned-active"],
     queryFn: async () => {
       const res = await axiosSecure.get(
-        `/parcels/rider?riderEmail=${user.email}&deliveryStatus=driver_assigned`
+        `/parcels/rider?riderEmail=${user.email}`
       );
       return res.data;
     },
@@ -42,16 +42,19 @@ const AssignedDeliveries = () => {
         }
       });
   };
+
   return (
     <div>
-      <h2 className="text-2xl md:text-4xl">Parcels Pending Pickup: {parcels.length}</h2>
+      <h2 className="text-2xl md:text-4xl">
+        My Assigned Deliveries: {parcels.length}
+      </h2>
       <div className="overflow-x-auto">
         <table className="table table-zebra">
-          {/* head */}
           <thead>
             <tr>
               <th></th>
               <th>Name</th>
+              <th>Status</th>
               <th>Confirm</th>
               <th>Other Actions</th>
             </tr>
@@ -61,6 +64,11 @@ const AssignedDeliveries = () => {
               <tr key={parcel._id}>
                 <th>{index + 1}</th>
                 <td>{parcel.parcelName}</td>
+                <td>
+                  <span className="badge badge-outline">
+                    {parcel.deliveryStatus.split("_").join(" ")}
+                  </span>
+                </td>
                 <td>
                   {parcel.deliveryStatus === "driver_assigned" ? (
                     <>
@@ -81,22 +89,26 @@ const AssignedDeliveries = () => {
                   )}
                 </td>
                 <td>
-                  <button
-                    onClick={() =>
-                      handleDeliveryStatusUpdate(parcel, "parcel_picked_up")
-                    }
-                    className="btn btn-primary text-black"
-                  >
-                    Mark as Picked up
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleDeliveryStatusUpdate(parcel, "parcel_delivered")
-                    }
-                    className="btn btn-primary text-black mx-2"
-                  >
-                    Mark as Delivered
-                  </button>
+                  {parcel.deliveryStatus === "rider_arriving" && (
+                    <button
+                      onClick={() =>
+                        handleDeliveryStatusUpdate(parcel, "parcel_picked_up")
+                      }
+                      className="btn btn-primary text-black"
+                    >
+                      Mark as Picked up
+                    </button>
+                  )}
+                  {parcel.deliveryStatus === "parcel_picked_up" && (
+                    <button
+                      onClick={() =>
+                        handleDeliveryStatusUpdate(parcel, "parcel_delivered")
+                      }
+                      className="btn btn-primary text-black"
+                    >
+                      Mark as Delivered
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
